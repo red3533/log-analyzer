@@ -4,6 +4,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"github.com/red3533/log-analyzer/internal/parser"
 )
 
 func main() {
@@ -16,5 +18,13 @@ func main() {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
+
+	logParsed, err := parser.NginxParser.Parse(parser.NginxParser{}, *filepath)
+	if err != nil {
+		fmt.Println("error", err)
+		os.Exit(1)
+	}
+
+	fmt.Printf("logParsed: %v\n", logParsed)
 
 }
