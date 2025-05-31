@@ -6,21 +6,20 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/red3533/log-analyzer/internal/models"
+
 )
 
-// TODO-refactor: move to internal/models
-type LogParsed struct {
-	Status int
-}
 
 type LogParser interface {
-	Parse(filepath string) []LogParsed
+	Parse(filepath string) []models.LogParsed
 }
 
 type NginxParser struct {
 }
 
-func (p NginxParser) Parse(filepath string) ([]LogParsed, error) {
+func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("file not found: %s: %w", filepath, err)
 	}
@@ -30,7 +29,7 @@ func (p NginxParser) Parse(filepath string) ([]LogParsed, error) {
 		return nil, fmt.Errorf("failed open file by path: %s: %w", filepath, err)
 	}
 
-	var parsed []LogParsed
+	var parsed []models.LogParsed
 	var total int
 
 	scanner := bufio.NewScanner(file)
@@ -43,7 +42,7 @@ func (p NginxParser) Parse(filepath string) ([]LogParsed, error) {
 			return nil, fmt.Errorf("failed to get status code from line: %s: %w", logLine, err)
 		}
 
-		parsed = append(parsed, LogParsed{Status: status})
+		parsed = append(parsed, models.LogParsed{Status: status})
 
 		total++
 	}
