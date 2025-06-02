@@ -43,7 +43,7 @@ func NewLogger(cfg models.LoggerConfig) Logger {
 	With().
 	Timestamp().
 	Str("app", "log-analyzer").
-	Int("pid", os.Getppid()).
+	Int("pid", os.Getpid()).
 	Logger()
 
 	globalLogger := Logger{baseLogger}
