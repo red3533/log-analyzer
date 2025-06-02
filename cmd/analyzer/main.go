@@ -2,37 +2,40 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 
 	"github.com/red3533/log-analyzer/internal/logger"
-	"github.com/red3533/log-analyzer/internal/models"
 	"github.com/red3533/log-analyzer/internal/parser"
+
+	"github.com/red3533/log-analyzer/internal/config"
 )
 
 func main() {
-	// TODO: load logger config from file
-	loggerConfig := models.LoggerConfig{
-		LogFile:    "logs/app.log",
-		LogLevel:   "debug",
-		MaxSizeMB:  20,
-		MaxBackups: 100,
-		MaxAgeDays: 30,
-	}
 
-	log := logger.NewLogger(loggerConfig)
-
-	filepath := flag.String("file", "", "Path to log file (required)")
+	configFlag := flag.String("config", "", "Path to config file (required)")
+	filepathFlag := flag.String("file", "", "Path to log file (required)")
 
 	flag.Parse()
 
-	if *filepath == "" {
-		log.Error().Msg("Flag -file not set")
+	if *configFlag == "" {
+		fmt.Println("Flag -config not set")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
+	if *filepathFlag == "" {
+		fmt.Println("Flag -file not set")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
+	cfg := config.MustLoadConfig(*configFlag)
+
+	log := logger.NewLogger(cfg.LoggerConfig)
+
 	nginxParser := parser.NewNginxParser(log)
-	logParsed, err := parser.NginxParser.Parse(nginxParser, *filepath)
+	logParsed, err := parser.NginxParser.Parse(nginxParser, *filepathFlag)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to parse logs")
 	}
