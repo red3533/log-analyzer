@@ -7,16 +7,20 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/red3533/log-analyzer/internal/logger"
 	"github.com/red3533/log-analyzer/internal/models"
-
 )
-
 
 type LogParser interface {
 	Parse(filepath string) []models.LogParsed
 }
 
 type NginxParser struct {
+	log logger.Logger
+}
+
+func NewNginxParser(log logger.Logger) NginxParser {
+	return NginxParser{log: log}
 }
 
 func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
