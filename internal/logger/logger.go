@@ -39,12 +39,12 @@ func NewLogger(cfg models.LoggerConfig) Logger {
 	zerolog.SetGlobalLevel(level)
 
 	baseLogger := zerolog.New(multiWriter).
-	Level(level).
-	With().
-	Timestamp().
-	Str("app", "log-analyzer").
-	Int("pid", os.Getpid()).
-	Logger()
+		Level(level).
+		With().
+		Timestamp().
+		Str("app", "log-analyzer").
+		Int("pid", os.Getpid()).
+		Logger()
 
 	globalLogger := Logger{baseLogger}
 
