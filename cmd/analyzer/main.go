@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"github.com/red3533/log-analyzer/internal/logger"
@@ -27,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	if *filepath == "" {
-		fmt.Println("Flag -file not set")
+		log.Error().Msg("Flag -file not set")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
@@ -35,10 +34,9 @@ func main() {
 	nginxParser := parser.NewNginxParser(log)
 	logParsed, err := parser.NginxParser.Parse(nginxParser, *filepath)
 	if err != nil {
-		fmt.Println("error", err)
-		os.Exit(1)
+		log.Fatal().Err(err).Msg("failed to parse logs")
 	}
 
-	fmt.Printf("logParsed: %v\n", logParsed)
+	log.Debug().Msgf("logParsed: %v", logParsed)
 
 }

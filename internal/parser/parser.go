@@ -25,16 +25,19 @@ func NewNginxParser(log logger.Logger) NginxParser {
 
 func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		return nil, fmt.Errorf("file not found: %s: %w", filepath, err)
+		p.log.Error().Err(err).Str("filepath", filepath).Msg("file not found")
+		return nil, err
 	}
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		return nil, fmt.Errorf("failed open file by path: %s: %w", filepath, err)
+		p.log.Error().Err(err).Str("filepath", filepath).Msg("failed to open file")
+		return nil, err
 	}
+	// TODO: add file close
 
 	var parsed []models.LogParsed
-	var total int
+	var successCount, errorCount int
 
 	scanner := bufio.NewScanner(file)
 
@@ -43,15 +46,17 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 
 		status, err := extractStatus(logLine)
 		if err != nil {
-			return nil, fmt.Errorf("failed to get status code from line: %s: %w", logLine, err)
+			p.log.Warn().Err(err).Str("line", logLine).Msg("failed to parse log line")
+			errorCount++
+			continue
 		}
 
 		parsed = append(parsed, models.LogParsed{Status: status})
 
-		total++
+		successCount++
 	}
 
-	fmt.Println("total", total)
+	p.log.Debug().Int("successCount", successCount).Int("errorCount", errorCount).Msg("Parsed lines")
 
 	return parsed, nil
 }
