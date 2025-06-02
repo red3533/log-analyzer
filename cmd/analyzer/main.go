@@ -5,10 +5,24 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/red3533/log-analyzer/internal/logger"
+	"github.com/red3533/log-analyzer/internal/models"
 	"github.com/red3533/log-analyzer/internal/parser"
 )
 
 func main() {
+	// TODO: load logger config from file
+	loggerConfig := models.LoggerConfig{
+		LogFile: "logs/app.log",
+		LogLevel: "trace",
+		MaxSizeMB: 20,
+		MaxBackups: 100,
+		MaxAgeDays: 30,
+	}
+
+	log := logger.NewLogger(loggerConfig)
+	_ = log
+
 	filepath := flag.String("file", "", "Path to log file (required)")
 
 	flag.Parse()
