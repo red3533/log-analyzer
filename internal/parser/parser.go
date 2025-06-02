@@ -34,7 +34,7 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 		p.log.Error().Err(err).Str("filepath", filepath).Msg("failed to open file")
 		return nil, err
 	}
-	// TODO: add file close
+	defer file.Close()
 
 	var parsed []models.LogParsed
 	var successCount, errorCount int
