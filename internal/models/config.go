@@ -1,5 +1,9 @@
 package models
 
+import (
+	"errors"
+)
+
 type AppConfig struct {
 	LoggerConfig `yaml:"logger_config"`
 }
@@ -12,4 +16,14 @@ type LoggerConfig struct {
 	MaxAgeDays int    `yaml:"max_age_days"`
 }
 
-//TODO: add validation method for app config
+func (c LoggerConfig) Validate() error {
+	if c.MaxSizeMB <= 0 {
+		return errors.New("MaxSizeMB must be positive")
+	}
+
+	if c.MaxAgeDays <= 0 {
+		return errors.New("MaxAgeDays must be positive")
+	}
+
+	return nil
+}
