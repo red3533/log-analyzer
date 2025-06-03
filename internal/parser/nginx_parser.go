@@ -16,6 +16,7 @@ var (
 	timestampRegexp = regexp.MustCompile(`\[.{26}\]`)
 	methodRegexp    = regexp.MustCompile(`\"([A-Z]+)`)
 	urlRegexp       = regexp.MustCompile(`\/[a-z]+\/*\.*\w*`)
+	SizeByteRegexp  = regexp.MustCompile(`[0-9]*$`)
 )
 
 type NginxParser struct {
@@ -70,12 +71,20 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 			continue
 		}
 
+		sizeByte, err := extractSizeByte(line)
+		if err != nil {
+			p.log.Warn().Err(err).Str("line", line).Msg("failed to parse log line")
+			errorCount++
+			continue
+		}
+
 		parsed = append(parsed, models.LogParsed{
 			IP:        ip,
 			Timestamp: timestamp,
 			Method:    method,
 			URL:       url,
 			Status:    status,
+			SizeByte:  sizeByte,
 		})
 
 		successCount++
@@ -139,6 +148,17 @@ func extractStatus(logLine string) (int, error) {
 	}
 
 	return -1, fmt.Errorf("status code not found")
+}
+
+func extractSizeByte(line string) (int, error) {
+	sizeByteStr := SizeByteRegexp.FindString(line)
+
+	sizeByte, err := strconv.Atoi(sizeByteStr)
+	if err != nil {
+		return -1, fmt.Errorf("failed to convert: %w", err)
+	}
+
+	return sizeByte, nil
 }
 
 func NewNginxParser(log logger.Logger, reader FileReader) NginxParser {

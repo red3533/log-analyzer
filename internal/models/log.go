@@ -8,4 +8,5 @@ type LogParsed struct {
 	Method    string
 	URL       string
 	Status    int
+	SizeByte  int
 }
