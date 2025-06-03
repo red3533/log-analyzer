@@ -5,13 +5,15 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/red3533/log-analyzer/internal/logger"
 	"github.com/red3533/log-analyzer/internal/models"
 )
 
 var (
-	ipRegexp = regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
+	ipRegexp        = regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
+	timestampRegexp = regexp.MustCompile(`\[.{26}\]`)
 )
 
 type NginxParser struct {
@@ -45,9 +47,17 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 			continue
 		}
 
+		timestamp, err := extractTimestamp(line)
+		if err != nil {
+			p.log.Warn().Err(err).Str("line", line).Msg("failed to parse log line")
+			errorCount++
+			continue
+		}
+
 		parsed = append(parsed, models.LogParsed{
-			IP:     ip,
-			Status: status,
+			IP:        ip,
+			Timestamp: timestamp,
+			Status:    status,
 		})
 
 		successCount++
@@ -63,6 +73,21 @@ func extractIP(line string) (string, error) {
 	ip := ipRegexp.FindString(line)
 
 	return ip, nil
+}
+
+func extractTimestamp(line string) (time.Time, error) {
+	timestampRaw := timestampRegexp.FindString(line)
+
+	// remove []
+	timestampRaw = timestampRaw[1:27]
+
+	layout := "02/Jan/2006:15:04:05 -0700"
+	timestamp, err := time.Parse(layout, timestampRaw)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("failed to convert timestamp raw: %w", err)
+	}
+
+	return timestamp, nil
 }
 
 func extractStatus(logLine string) (int, error) {
