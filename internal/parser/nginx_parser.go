@@ -10,6 +10,10 @@ import (
 	"github.com/red3533/log-analyzer/internal/models"
 )
 
+var (
+	ipRegexp = regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
+)
+
 type NginxParser struct {
 	log    logger.Logger
 	reader FileReader
@@ -56,9 +60,7 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 }
 
 func extractIP(line string) (string, error) {
-	re := regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
-
-	ip := re.FindString(line)
+	ip := ipRegexp.FindString(line)
 
 	return ip, nil
 }
