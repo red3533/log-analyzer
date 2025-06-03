@@ -17,29 +17,24 @@ func MustLoadConfig(filepath string) *models.AppConfig {
 }
 
 func LoadConfig(filepath string) (*models.AppConfig, error) {
-	// TODO: fix error return
-
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		fmt.Printf("file not found: %s: %s\n", filepath, err.Error())
-		return nil, err
+		return nil, fmt.Errorf("file not found: %w", err)
 	}
 
 	data, err := os.ReadFile(filepath)
 	if err != nil {
-		fmt.Printf("failed to read file: %s: %s\n", filepath, err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
 	var cfg models.AppConfig
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		fmt.Printf("failed to unmarshall data: %s: %s\n", data, err.Error())
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshall data: %w", err)
 	}
 
 	err = cfg.LoggerConfig.Validate()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to validate: %w", err)
 	}
 
 	// TODO: add validate for others config
