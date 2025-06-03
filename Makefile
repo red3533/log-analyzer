@@ -1,5 +1,5 @@
 run:
-	go run cmd/analyzer/main.go -file testdata/logs/nginx.log -config config/config.yaml
+	go run cmd/analyzer/main.go -file testdata/logs/nginx.log -config config/config.yaml -type nginx
 
 helper:
 	go run helper/helper.go
