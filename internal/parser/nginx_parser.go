@@ -1,40 +1,13 @@
 package parser
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 
 	"github.com/red3533/log-analyzer/internal/logger"
 	"github.com/red3533/log-analyzer/internal/models"
 )
-
-// TODO: replace to default file reader
-type NginxFileReader struct {
-}
-
-func (r NginxFileReader) ReadLines(filepath string) ([]string, error) {
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		return nil, err
-	}
-
-	file, err := os.Open(filepath)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
-
-	var lines []string
-
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		lines = append(lines, scanner.Text())
-	}
-
-	return lines, scanner.Err()
-}
 
 type NginxParser struct {
 	log    logger.Logger

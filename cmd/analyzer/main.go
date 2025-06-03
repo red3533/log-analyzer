@@ -48,7 +48,7 @@ func main() {
 		log.Fatal().Str("type", *logTypeFlag).Msg("unknown log type")
 
 	case "nginx":
-		logParser = parser.NewNginxParser(log, parser.NginxFileReader{})
+		logParser = parser.NewNginxParser(log, parser.DefaultFileReader{})
 
 	default:
 		log.Fatal().Str("type", *logTypeFlag).Msg("unknown log type")
