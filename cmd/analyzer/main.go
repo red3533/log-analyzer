@@ -15,6 +15,7 @@ func main() {
 
 	configFlag := flag.String("config", "", "Path to config file (required)")
 	filepathFlag := flag.String("file", "", "Path to log file (required)")
+	logTypeFlag := flag.String("type", "", "Type of logs to analyze (required)")
 
 	flag.Parse()
 
@@ -30,12 +31,30 @@ func main() {
 		os.Exit(1)
 	}
 
+	if *logTypeFlag == "" {
+		fmt.Println("Flag -type not set")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	cfg := config.MustLoadConfig(*configFlag)
 	log := logger.NewLogger(cfg.LoggerConfig)
 
-	nginxParser := parser.NewNginxParser(log, parser.NginxFileReader{})
-	logParsed, err := nginxParser.Parse(*filepathFlag)
+	var logParser parser.LogParser
 
+	switch *logTypeFlag {
+	case "json":
+		// implement
+		log.Fatal().Str("type", *logTypeFlag).Msg("unknown log type")
+
+	case "nginx":
+		logParser = parser.NewNginxParser(log, parser.NginxFileReader{})
+
+	default:
+		log.Fatal().Str("type", *logTypeFlag).Msg("unknown log type")
+	}
+
+	logParsed, err := logParser.Parse(*filepathFlag)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to parse logs")
 	}
