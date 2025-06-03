@@ -3,7 +3,8 @@ package models
 import "time"
 
 type LogParsed struct {
-	IP string
+	IP        string
 	Timestamp time.Time
-	Status int
+	Method    string
+	Status    int
 }
