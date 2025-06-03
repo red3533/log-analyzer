@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -26,6 +27,13 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 
 	for _, line := range lines {
 
+		ip, err := extractIP(line)
+		if err != nil {
+			p.log.Warn().Err(err).Str("line", line).Msg("failed to parse log line")
+			errorCount++
+			continue
+		}
+
 		status, err := extractStatus(line)
 		if err != nil {
 			p.log.Warn().Err(err).Str("line", line).Msg("failed to parse log line")
@@ -33,7 +41,10 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 			continue
 		}
 
-		parsed = append(parsed, models.LogParsed{Status: status})
+		parsed = append(parsed, models.LogParsed{
+			IP:     ip,
+			Status: status,
+		})
 
 		successCount++
 
@@ -42,6 +53,14 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 	p.log.Debug().Int("successCount", successCount).Int("errorCount", errorCount).Msg("Parsed lines")
 
 	return parsed, nil
+}
+
+func extractIP(line string) (string, error) {
+	re := regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
+
+	ip := re.FindString(line)
+
+	return ip, nil
 }
 
 func extractStatus(logLine string) (int, error) {
