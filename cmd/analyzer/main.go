@@ -31,11 +31,11 @@ func main() {
 	}
 
 	cfg := config.MustLoadConfig(*configFlag)
-
 	log := logger.NewLogger(cfg.LoggerConfig)
 
-	nginxParser := parser.NewNginxParser(log)
-	logParsed, err := parser.NginxParser.Parse(nginxParser, *filepathFlag)
+	nginxParser := parser.NewNginxParser(log, parser.NginxFileReader{})
+	logParsed, err := nginxParser.Parse(*filepathFlag)
+
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to parse logs")
 	}
