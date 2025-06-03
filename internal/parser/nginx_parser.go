@@ -15,6 +15,7 @@ var (
 	ipRegexp        = regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
 	timestampRegexp = regexp.MustCompile(`\[.{26}\]`)
 	methodRegexp    = regexp.MustCompile(`\"([A-Z]+)`)
+	urlRegexp       = regexp.MustCompile(`\/[a-z]+\/*\.*\w*`)
 )
 
 type NginxParser struct {
@@ -55,6 +56,13 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 			continue
 		}
 
+		url, err := extractURL(line)
+		if err != nil {
+			p.log.Warn().Err(err).Str("line", line).Msg("failed to parse log line")
+			errorCount++
+			continue
+		}
+
 		status, err := extractStatus(line)
 		if err != nil {
 			p.log.Warn().Err(err).Str("line", line).Msg("failed to parse log line")
@@ -66,6 +74,7 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 			IP:        ip,
 			Timestamp: timestamp,
 			Method:    method,
+			URL:       url,
 			Status:    status,
 		})
 
@@ -108,6 +117,12 @@ func extractMethod(line string) (string, error) {
 	method := methodGroup[1]
 
 	return method, nil
+}
+
+func extractURL(line string) (string, error) {
+	url := urlRegexp.FindString(line)
+
+	return url, nil
 }
 
 func extractStatus(logLine string) (int, error) {
