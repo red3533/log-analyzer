@@ -9,24 +9,40 @@ import (
 )
 
 func MustLoadConfig(filepath string) *models.AppConfig {
+	cfg, err := LoadConfig(filepath)
+	if err != nil {
+		panic(err)
+	}
+	return cfg
+}
+
+func LoadConfig(filepath string) (*models.AppConfig, error) {
+	// TODO: fix error return
+
 	if _, err := os.Stat(filepath); os.IsNotExist(err) {
-		errMsg := fmt.Sprintf("file not found: %s: error: %s\n", filepath, err.Error())
-		panic(errMsg)
+		fmt.Printf("file not found: %s: %s\n", filepath, err.Error())
+		return nil, err
 	}
 
 	data, err := os.ReadFile(filepath)
 	if err != nil {
-		errMsg := fmt.Sprintf("failed to read file: %s: error: %s\n", filepath, err.Error())
-		panic(errMsg)
+		fmt.Printf("failed to read file: %s: %s\n", filepath, err.Error())
+		return nil, err
 	}
 
 	var cfg models.AppConfig
-
 	err = yaml.Unmarshal(data, &cfg)
 	if err != nil {
-		errMsg := fmt.Sprintf("failed to unmarshall data: %s: error: %s\n", data, err.Error())
-		panic(errMsg)
+		fmt.Printf("failed to unmarshall data: %s: %s\n", data, err.Error())
+		return nil, err
 	}
 
-	return &cfg
+	err = cfg.LoggerConfig.Validate()
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: add validate for others config
+
+	return &cfg, nil
 }
