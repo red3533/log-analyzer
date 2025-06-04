@@ -1,12 +1,75 @@
 package parser
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/red3533/log-analyzer/internal/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestParse_WithTempFile(t *testing.T) {
+	cases := []struct {
+		name     string
+		content  []string
+		wantLogs int
+		wantErr  bool
+	}{
+		{
+			name: "correct_content",
+			content: []string{
+				`192.168.1.8 - - [31/May/2025:10:00:08 +0000] "GET /login HTTP/1.1" 200 256`,
+				`192.168.1.18 - - [31/May/2025:10:00:18 +0000] "GET /favicon.ico HTTP/1.1" 404 0`,
+				`192.168.1.19 - - [31/May/2025:10:00:19 +0000] "GET /robots.txt HTTP/1.1" 200 0`,
+			},
+			wantLogs: 3,
+			wantErr:  false,
+		},
+		{
+			name: "invalid_log_but_ok",
+			content: []string{
+				`192.168.1.15 - - [31/May/2025:10:00:15 +0000] "PUT /api/users/2 HTTP/1.1" 200 512`,
+				`warn_1`,
+				`192.168.1.1 - - [31/May/2025:10:00:01 +0000] "GET /index.html HTTP/1.1" 200 1024`,
+				`warn_2`,
+				`warn_3`,
+			},
+			wantLogs: 2,
+			wantErr:  false,
+		},
+		{
+			name:     "empty_log_file",
+			content:  []string{},
+			wantLogs: 0,
+			wantErr:  false,
+		},
+	}
+
+	nginxParser := NewNginxParser(logger.Logger{}, DefaultFileReader{})
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			tmpFile := filepath.Join(t.TempDir(), "test.log")
+			os.WriteFile(tmpFile, []byte(strings.Join(tc.content, "\n")), 0644)
+
+			out, err := nginxParser.Parse(tmpFile)
+			if tc.wantErr {
+				require.Error(t, err)
+				return
+			}
+
+			require.NoError(t, err)
+			assert.Len(t, out, tc.wantLogs)
+
+		})
+	}
+}
 
 func TestExtractIP_EdgeCases(t *testing.T) {
 	cases := []struct {
