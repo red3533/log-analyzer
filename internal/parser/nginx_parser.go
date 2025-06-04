@@ -99,6 +99,10 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 func extractIP(line string) (string, error) {
 	ip := ipRegexp.FindString(line)
 
+	if ip == "" {
+		return "", fmt.Errorf("ip not found: %s", line)
+	}
+
 	return ip, nil
 }
 
