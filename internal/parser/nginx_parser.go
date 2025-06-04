@@ -17,7 +17,7 @@ var (
 	timestampRegexp = regexp.MustCompile(`\[.{26}\]`)
 	methodRegexp    = regexp.MustCompile(`\"([A-Z]+)`)
 	urlRegexp       = regexp.MustCompile(`"[A-Z]+\s+([^ ]+)\s+HTTP/\d\.\d"`)
-	SizeByteRegexp  = regexp.MustCompile(`[0-9]*$`)
+	sizeByteRegexp  = regexp.MustCompile(`\d+\s(\-*[0-9]*)$`)
 )
 
 type NginxParser struct {
@@ -190,11 +190,20 @@ func extractStatus(logLine string) (int, error) {
 }
 
 func extractSizeByte(line string) (int, error) {
-	sizeByteStr := SizeByteRegexp.FindString(line)
+	sizeByteGroup := sizeByteRegexp.FindStringSubmatch(line)
 
+	if len(sizeByteGroup) < 1 {
+		return -1, fmt.Errorf("size byte not found: %s", line)
+	}
+
+	sizeByteStr := string(sizeByteGroup[1])
 	sizeByte, err := strconv.Atoi(sizeByteStr)
 	if err != nil {
 		return -1, fmt.Errorf("failed to convert: %w", err)
+	}
+
+	if sizeByte < 0 {
+		return -1, fmt.Errorf("incorrect size byte: %d", sizeByte)
 	}
 
 	return sizeByte, nil
