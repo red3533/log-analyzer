@@ -109,6 +109,10 @@ func extractIP(line string) (string, error) {
 func extractTimestamp(line string) (time.Time, error) {
 	timestampRaw := timestampRegexp.FindString(line)
 
+	if timestampRaw == "" {
+		return time.Time{}, fmt.Errorf("timestamp not found: %s", line)
+	}
+
 	// remove []
 	timestampRaw = timestampRaw[1:27]
 
