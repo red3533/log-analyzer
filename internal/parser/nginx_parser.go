@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -15,7 +16,7 @@ var (
 	ipRegexp        = regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`)
 	timestampRegexp = regexp.MustCompile(`\[.{26}\]`)
 	methodRegexp    = regexp.MustCompile(`\"([A-Z]+)`)
-	urlRegexp       = regexp.MustCompile(`\/[a-z]+\/*\.*\w*`)
+	urlRegexp       = regexp.MustCompile(`"[A-Z]+\s+([^ ]+)\s+HTTP/\d\.\d"`)
 	SizeByteRegexp  = regexp.MustCompile(`[0-9]*$`)
 )
 
@@ -153,9 +154,18 @@ func extractMethod(line string) (string, error) {
 }
 
 func extractURL(line string) (string, error) {
-	url := urlRegexp.FindString(line)
+	urlGroup := urlRegexp.FindStringSubmatch(line)
+	if len(urlGroup) < 1 {
+		return "", fmt.Errorf("url not found: %s", line)
+	}
 
-	return url, nil
+	urlPart := urlGroup[1]
+
+	if _, err := url.Parse(urlPart); err != nil {
+		return "", fmt.Errorf("incorrect url: %s: %w", urlPart, err)
+	}
+
+	return urlPart, nil
 }
 
 func extractStatus(logLine string) (int, error) {
