@@ -128,10 +128,26 @@ func extractTimestamp(line string) (time.Time, error) {
 func extractMethod(line string) (string, error) {
 	methodGroup := methodRegexp.FindStringSubmatch(line)
 	if len(methodGroup) < 1 {
-		return "", fmt.Errorf("method not found")
+		return "", fmt.Errorf("method not found: %s", line)
 	}
 
 	method := methodGroup[1]
+
+	correctMethods := map[string]interface{}{
+		"GET":     struct{}{},
+		"POST":    struct{}{},
+		"PUT":     struct{}{},
+		"DELETE":  struct{}{},
+		"HEAD":    struct{}{},
+		"OPTIONS": struct{}{},
+		"PATCH":   struct{}{},
+		"TRACE":   struct{}{},
+		"CONNECT": struct{}{},
+	}
+
+	if _, ok := correctMethods[method]; !ok {
+		return "", fmt.Errorf("incorrect method: %s", method)
+	}
 
 	return method, nil
 }
