@@ -177,11 +177,16 @@ func extractStatus(logLine string) (int, error) {
 			if err != nil {
 				return -1, fmt.Errorf("failed convert to int: %s: %w", part, err)
 			}
+
+			if status < 100 || status > 599 {
+				return -1, fmt.Errorf("status code: %d must be in range 100-599", status)
+			}
+
 			return status, nil
 		}
 	}
 
-	return -1, fmt.Errorf("status code not found")
+	return -1, fmt.Errorf("status code not found: %s", logLine)
 }
 
 func extractSizeByte(line string) (int, error) {
