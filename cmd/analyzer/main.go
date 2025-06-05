@@ -7,6 +7,7 @@ import (
 
 	"github.com/red3533/log-analyzer/internal/logger"
 	"github.com/red3533/log-analyzer/internal/parser"
+	"github.com/red3533/log-analyzer/internal/sorter"
 
 	"github.com/red3533/log-analyzer/internal/config"
 )
@@ -16,6 +17,8 @@ func main() {
 	configFlag := flag.String("config", "", "Path to config file (required)")
 	filepathFlag := flag.String("file", "", "Path to log file (required)")
 	logTypeFlag := flag.String("type", "", "Type of logs to analyze (required)")
+	sortFieldFlag := flag.String("field", "ip", "Sort field or \"\" for no sort")
+	sortByFlag := flag.String("by", "desc", "Direction of sort: asc, desc")
 
 	flag.Parse()
 
@@ -60,5 +63,10 @@ func main() {
 	}
 
 	log.Debug().Msgf("logParsed: %v", logParsed)
+
+	logSorter := sorter.NewLogSorter(log)
+	logSorter.Sort(logParsed, *sortFieldFlag, *sortByFlag)
+
+	log.Debug().Msgf("sorted logs: %v", logParsed)
 
 }
