@@ -8,7 +8,7 @@ import (
 )
 
 type LogParser interface {
-	Parse(filepath string) ([]models.LogParsed, error)
+	Parse(filepath string) ([]models.Log, error)
 }
 
 type FileReader interface {

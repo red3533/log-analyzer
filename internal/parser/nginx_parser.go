@@ -25,9 +25,9 @@ type NginxParser struct {
 	reader FileReader
 }
 
-func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
+func (p NginxParser) Parse(filepath string) ([]models.Log, error) {
 
-	var parsed []models.LogParsed
+	var parsed []models.Log
 	var successCount, errorCount int
 
 	lines, err := p.reader.ReadLines(filepath)
@@ -79,7 +79,7 @@ func (p NginxParser) Parse(filepath string) ([]models.LogParsed, error) {
 			continue
 		}
 
-		parsed = append(parsed, models.LogParsed{
+		parsed = append(parsed, models.Log{
 			IP:        ip,
 			Timestamp: timestamp,
 			Method:    method,

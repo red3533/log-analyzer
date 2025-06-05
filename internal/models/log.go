@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type LogParsed struct {
+type Log struct {
 	IP        string
 	Timestamp time.Time
 	Method    string
