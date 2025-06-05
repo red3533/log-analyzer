@@ -170,3 +170,53 @@ func TestSort_Error(t *testing.T) {
 	}
 
 }
+
+func TestSort_StableURLSortOrder(t *testing.T) {
+	cases := []struct {
+		name      string
+		sortField string
+		sortBy    string
+		logs      []models.Log
+		want      []models.Log
+	}{
+		{
+			name:      "incorrect_ip_upcase",
+			sortField: "ip",
+			sortBy:    "asc",
+			logs: []models.Log{
+				{IP: "42.324.627.35.2", URL: "second"},
+				{IP: "33.632.52.43"},
+				{IP: "42.324.627.35.2", URL: "first"},
+			},
+			want: []models.Log{
+				{IP: "33.632.52.43"},
+				{IP: "42.324.627.35.2", URL: "second"},
+				{IP: "42.324.627.35.2", URL: "first"},
+			},
+		},
+	}
+
+	mockLogger := logger.Logger{}
+	logSorter := NewLogSorter(mockLogger)
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			t.Parallel()
+
+			logs := tc.logs
+
+			err := logSorter.Sort(logs, tc.sortField, tc.sortBy)
+			require.NoError(t, err)
+
+			if !assert.True(t, reflect.DeepEqual(tc.want, logs)) {
+				fmt.Printf("Want: %v\nGot: %v\n", tc.want, logs)
+			}
+
+			for i, log := range logs {
+				assert.Equal(t, tc.want[i].URL, log.URL)
+			}
+
+		})
+	}
+
+}
