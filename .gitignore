@@ -1,5 +1,8 @@
 /logs
 /config
 
+coverage.out
+coverage.html
+
 /helper
 /playground
