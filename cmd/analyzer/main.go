@@ -65,6 +65,11 @@ func main() {
 	log.Debug().Msgf("logParsed: %v", logEntries)
 
 	logSorter := sorter.NewLogSorter(log)
+	err = logSorter.Sort(logEntries, *sortFieldFlag, *sortByFlag)
+	if err != nil {
+		log.Fatal().Err(err).Msg("failed to sort logs")
+	}
+
 	logSorter.Sort(logEntries, *sortFieldFlag, *sortByFlag)
 
 	log.Debug().Msgf("sorted logs: %v", logEntries)

@@ -12,9 +12,11 @@ type LogSorter struct {
 	log logger.Logger
 }
 
-func (s LogSorter) Sort(logs []models.Log, sortField string, sortBy string) error {
+func (s LogSorter) Sort(logs []models.Log, sortFieldFlag string, sortByFlag string) error {
 
-	// TODO: add validation
+	if sortByFlag != "asc" && sortByFlag != "desc" {
+		return fmt.Errorf("unknown sort direction: %s", sortByFlag)
+	}
 
 	comparators := map[string]func(i, j models.Log) bool{
 		"ip":        func(i, j models.Log) bool { return i.IP < j.IP },
@@ -25,12 +27,12 @@ func (s LogSorter) Sort(logs []models.Log, sortField string, sortBy string) erro
 		"size_byte": func(i, j models.Log) bool { return i.SizeByte < j.SizeByte },
 	}
 
-	comparator, ok := comparators[sortField]
+	comparator, ok := comparators[sortFieldFlag]
 	if !ok {
-		return fmt.Errorf("unknown sort field: %s", sortField)
+		return fmt.Errorf("unknown sort field: %s", sortFieldFlag)
 	}
 
-	if sortBy == "asc" {
+	if sortByFlag == "asc" {
 		sort.SliceStable(logs, func(i, j int) bool { return comparator(logs[i], logs[j]) })
 	} else {
 		sort.SliceStable(logs, func(i, j int) bool { return comparator(logs[j], logs[i]) })
