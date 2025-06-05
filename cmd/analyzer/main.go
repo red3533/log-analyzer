@@ -57,16 +57,16 @@ func main() {
 		log.Fatal().Str("type", *logTypeFlag).Msg("unknown log type")
 	}
 
-	logParsed, err := logParser.Parse(*filepathFlag)
+	logEntries, err := logParser.Parse(*filepathFlag)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to parse logs")
 	}
 
-	log.Debug().Msgf("logParsed: %v", logParsed)
+	log.Debug().Msgf("logParsed: %v", logEntries)
 
 	logSorter := sorter.NewLogSorter(log)
-	logSorter.Sort(logParsed, *sortFieldFlag, *sortByFlag)
+	logSorter.Sort(logEntries, *sortFieldFlag, *sortByFlag)
 
-	log.Debug().Msgf("sorted logs: %v", logParsed)
+	log.Debug().Msgf("sorted logs: %v", logEntries)
 
 }
