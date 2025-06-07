@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/red3533/log-analyzer/internal/filter"
 	"github.com/red3533/log-analyzer/internal/logger"
 	"github.com/red3533/log-analyzer/internal/parser"
-	"github.com/red3533/log-analyzer/internal/sorter"
 
 	"github.com/red3533/log-analyzer/internal/config"
 )
@@ -15,10 +15,12 @@ import (
 func main() {
 
 	configFlag := flag.String("config", "", "Path to config file (required)")
-	filepathFlag := flag.String("file", "", "Path to log file (required)")
+	logFilepathFlag := flag.String("file", "", "Path to log file (required)")
 	logTypeFlag := flag.String("type", "", "Type of logs to analyze (required)")
-	sortFieldFlag := flag.String("field", "ip", "Sort field or \"\" for no sort")
-	sortByFlag := flag.String("by", "desc", "Direction of sort: asc, desc")
+
+	filterIPFlag := flag.String("filter-ip", "", "")
+	filterURLFlag := flag.String("filter-url", "/api/*", "")
+	filterStatusFlag := flag.Int("filter-status", 200, "")
 
 	flag.Parse()
 
@@ -28,7 +30,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *filepathFlag == "" {
+	if *logFilepathFlag == "" {
 		fmt.Println("Flag -file not set")
 		flag.PrintDefaults()
 		os.Exit(1)
@@ -57,21 +59,24 @@ func main() {
 		log.Fatal().Str("type", *logTypeFlag).Msg("unknown log type")
 	}
 
-	logEntries, err := logParser.Parse(*filepathFlag)
+	parsedLogs, err := logParser.Parse(*logFilepathFlag)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to parse logs")
 	}
 
-	log.Debug().Msgf("logParsed: %v", logEntries)
+	// filter
+	logFilter := sorter.NewLogFilter()
+	filters := []interface{}{*filterIPFlag, *filterURLFlag, *filterStatusFlag}
 
-	logSorter := sorter.NewLogSorter(log)
-	err = logSorter.Sort(logEntries, *sortFieldFlag, *sortByFlag)
+	filteredLogs, err := logFilter.Filter(parsedLogs, filters)
 	if err != nil {
 		log.Fatal().Err(err).Msg("failed to sort logs")
 	}
 
-	logSorter.Sort(logEntries, *sortFieldFlag, *sortByFlag)
-
-	log.Debug().Msgf("sorted logs: %v", logEntries)
+	// debug
+	fmt.Println("----- SORTED LOGS -----")
+	for _, fl := range filteredLogs {
+		fmt.Println(fl)
+	}
 
 }
